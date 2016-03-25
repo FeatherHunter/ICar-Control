@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="E:\Projects\CarContrl-Client\app\build\intermediates\exploded-aar\CarContrl-Client\library-listview\unspecified\jars\classes.jar"
+        jumboMode="false"
+        revision="23.0.2"
+        sha1="344ac80023f96d765e519a8d716ac3f92c38ec7d">
+        <dex dex="E:\Projects\CarContrl-Client\app\build\intermediates\pre-dexed\debug\classes-6575171ca22d9bea1f72456e675e306b0f6940c6.jar" />
+    </item>
+
+</items>
