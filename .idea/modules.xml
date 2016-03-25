@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CarContrl-Client.iml" filepath="$PROJECT_DIR$/CarContrl-Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ICar-Control.iml" filepath="$PROJECT_DIR$/ICar-Control.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/library-listview/library-listview.iml" filepath="$PROJECT_DIR$/library-listview/library-listview.iml" />
     </modules>
