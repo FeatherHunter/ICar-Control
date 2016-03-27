@@ -75,8 +75,8 @@ public class IHomeService extends Service{
 	
 	private String serverString = "139.129.19.115";
 	private String contrlCenterString = "192.168.1.108";
-	private String carServerIP = "192.168.191.1";
-	//private String carServerIP = "120.27.104.75";
+	//private String carServerIP = "192.168.191.1";
+	private String carServerIP = "120.27.104.75";
 	private int carServerPort = 8080;
 	private int generalPort = 8080;
 	private String cameraIDString = "20000";
@@ -257,9 +257,12 @@ public class IHomeService extends Service{
 					}
 					/*断开连接后,重新连接和身份认证*/
 					try {
-						/*检测链接是否超时的线程*/
-						Thread thread = new Thread(connectOvertimeRunnable);
-						thread.start();
+						if (stopallthread) {
+							break;
+						}
+//						/*检测链接是否超时的线程*/
+//						Thread thread = new Thread(connectOvertimeRunnable);
+//						thread.start();
 						serverSocket = new Socket(carServerIP, carServerPort);
 						/*得到输入流、输出流*/
 						outputStream = serverSocket.getOutputStream();
@@ -285,6 +288,17 @@ public class IHomeService extends Service{
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						isConnected = false; //连接失败
+
+						System.out.println("connect error!");
+						Intent cintent = new Intent();
+						cintent.setAction(cintent.ACTION_ANSWER);
+
+						cintent.putExtra("result", "car");
+						cintent.putExtra("car", "connect error");
+
+						sendBroadcast(cintent);
+						//stopallthread = true;
+
 						try {
 							Thread.sleep(2500);  //失败后等待3s连接
 						} catch (InterruptedException e1) {
@@ -312,7 +326,7 @@ public class IHomeService extends Service{
 					if(!sendMsg("##"+account+"&##"+password+"##&"+'\0'))
 					{
 						try {
-							Thread.sleep(2500);  //身份验证失败后等待3s
+							Thread.sleep(1500);  //身份验证失败后等待3s
 						} catch (InterruptedException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -340,7 +354,7 @@ public class IHomeService extends Service{
 
 
 					try {
-						Thread.sleep(1000);  //身份验证失败后等待1s
+						Thread.sleep(1000);  //等待1s
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -362,6 +376,7 @@ public class IHomeService extends Service{
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
+			System.out.println("开启===================================");
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
@@ -379,6 +394,7 @@ public class IHomeService extends Service{
 				cintent.putExtra("car", "connect error");
 
 				sendBroadcast(cintent);
+				//stopallthread = true;
 			}
 
 		}
@@ -429,6 +445,9 @@ public class IHomeService extends Service{
 					e.printStackTrace();
 					isConnected = false;
 					isAuthed = false;
+				}
+				if (stopallthread) {
+					break;
 				}
 				String revmsg = new String(buffer, 0, temp);
 				System.out.println("receive msg:"+ revmsg + "END");

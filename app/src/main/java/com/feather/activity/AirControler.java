@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,15 +24,18 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
     Button workModeButton  = null;
     Button iceButton = null;
     Button inAirButton = null;
-    Button powerButton = null;
+    ImageButton powerImageButton = null;
 //    Button windHeadButton = null, windTailButton = null, windHTButton = null, windTRmIceButton = null, windRmIceButton = null;
     Button windDireModeButton = null;
+
     TextView iceTextView = null;
     TextView inAirTextView = null;
     TextView workModeTextView = null;
     TextView windDirTextView = null;
     TextView windValueTextView = null;
     TextView tempValueTextView = null;
+
+    boolean isStarted = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +51,7 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
         windDirTextView = (TextView) findViewById(R.id.windDir_value);
         windValueTextView = (TextView) findViewById(R.id.wind_value); //风力大小
         tempValueTextView = (TextView) findViewById(R.id.temp_value); //温度大小
+
         /*设置温度确认按键*/
         tempCheckButton = (Button) findViewById(R.id.temp_check);
         tempCheckButton.setOnClickListener(new tempCheckButtonListener());
@@ -68,8 +73,8 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
         inAirButton.setOnClickListener(new inAirButtonListener());
 
         /*开关空调*/
-        powerButton = (Button) findViewById(R.id.power_onauto_off);
-        powerButton.setOnClickListener(new powerOnButtonListener());
+        powerImageButton = (ImageButton) findViewById(R.id.power_onauto_off);
+        powerImageButton.setOnClickListener(new powerOnButtonListener());
 
         /*风向模式*/
         windDireModeButton = (Button) findViewById(R.id.wind_dir_mode);
@@ -113,6 +118,7 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
+            if(!isStarted) return;
             int tempValue = tempPicker.getValue();
 
             switch (tempValue)
@@ -154,7 +160,7 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
             }
             tempValueTextView.setText(""+tempValue);
             String msg = Instruction.TEMP_CTRL+(char)tempValue;
-            sendMsg2Service(msg);
+            sendMsg2Service(msg+'\0');
             Toast.makeText(AirControler.this, "设置温度"+msg, Toast.LENGTH_SHORT).show();
         }
     }
@@ -167,10 +173,11 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
+            if(!isStarted) return;
             int windValue = windPicker.getValue();
             windValueTextView.setText(""+windValue);
             String msg = Instruction.WIND_CTRL+(char)windValue;
-            sendMsg2Service(msg);
+            sendMsg2Service(msg+'\0');
             Toast.makeText(AirControler.this, "设置风力"+msg, Toast.LENGTH_SHORT).show();
         }
     }
@@ -183,21 +190,27 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
-            if(iceTextView.getText().equals("制冷"))
+            if(isStarted)
             {
-                iceTextView.setText("关闭");
-                String msg = Instruction.ICE_CTRL+(char)Instruction.ICE_OFF;
-                sendMsg2Service(msg);
-                Toast.makeText(AirControler.this, "当前制冷模式:关闭"+msg, Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                iceTextView.setText("制冷");
-                String msg = Instruction.ICE_CTRL+(char)Instruction.ICE_ON;
-                sendMsg2Service(msg);
-                Toast.makeText(AirControler.this, "当前制冷模式:制冷"+msg, Toast.LENGTH_SHORT).show();
+                if(iceTextView.getText().equals("制冷"))
+                {
+                    iceTextView.setText("关闭");
+                    iceTextView.setTextColor(ContextCompat.getColor(AirControler.this, R.color.black));
+                    String msg = Instruction.ICE_CTRL+(char)Instruction.ICE_OFF;
+                    sendMsg2Service(msg+'\0');
+                    Toast.makeText(AirControler.this, "当前制冷模式:关闭"+msg, Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    iceTextView.setText("制冷");
+                    iceTextView.setTextColor(ContextCompat.getColor(AirControler.this, R.color.temp_20));
+                    String msg = Instruction.ICE_CTRL+(char)Instruction.ICE_ON;
+                    sendMsg2Service(msg+'\0');
+                    Toast.makeText(AirControler.this, "当前制冷模式:制冷"+msg, Toast.LENGTH_SHORT).show();
 
-            }
+                }//end of ice
+            }//end of start
+
         }
     }
 
@@ -209,18 +222,19 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
+            if(!isStarted) return;
             if(inAirTextView.getText().equals("内循环"))
             {
                 inAirTextView.setText("外循环");
                 String msg = Instruction.AIR_CTRL+(char)Instruction.AIR_OUTCYCLE;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前进气模式:外循环"+msg, Toast.LENGTH_SHORT).show();
             }
             else
             {
                 inAirTextView.setText("内循环");
                 String msg = Instruction.AIR_CTRL+(char)Instruction.AIR_INCYCLE;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前进气模式:内循环"+msg, Toast.LENGTH_SHORT).show();
 
             }
@@ -234,18 +248,19 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
+            if(!isStarted) return;
             if(workModeTextView.getText().equals("自动"))
             {
                 workModeTextView.setText("手动");
                 String msg = Instruction.WORK_CTRL+(char)Instruction.WORK_MODE_MANU;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前工作模式:手动"+msg, Toast.LENGTH_SHORT).show();
             }
             else
             {
                 workModeTextView.setText("自动");
                 String msg = Instruction.WORK_CTRL+(char)Instruction.WORK_MODE_AUTO;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前工作模式:自动"+msg, Toast.LENGTH_SHORT).show();
 
             }
@@ -260,21 +275,59 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
-            if(powerButton.getText().equals("开启"))
+            if(!isStarted)
             {
-                powerButton.setText("OFF");
+                //powerImageButton.setText("OFF");
                 workModeTextView.setText("自动");
+                powerImageButton.setImageDrawable(getDrawable(R.drawable.power_on));
                 String msg = Instruction.WORK_CTRL+(char)Instruction.WORK_MODE_AUTO;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "开启:自动模式"+msg, Toast.LENGTH_SHORT).show();
+
+                /**
+                 *   开机启动进行显示
+                 * */
+                inAirTextView.setText("内循环");
+                msg = Instruction.AIR_CTRL+(char)Instruction.AIR_INCYCLE;
+                sendMsg2Service(msg+'\0');
+
+                iceTextView.setText("关闭");
+                msg = Instruction.ICE_CTRL+(char)Instruction.ICE_OFF;
+                sendMsg2Service(msg+'\0');
+
+                windValueTextView.setText("0");
+                msg = Instruction.WIND_CTRL+(char)0;
+                sendMsg2Service(msg+'\0');
+
+                tempValueTextView.setText("22");
+                msg = Instruction.TEMP_CTRL+(char)22;
+                tempValueTextView.setTextColor(ContextCompat.getColor(AirControler.this, R.color.temp_22));
+                sendMsg2Service(msg+'\0');
+
+                windDirTextView.setText("吹脚");
+                msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_TAIL;
+                sendMsg2Service(msg+'\0');
+
+                isStarted = true;
             }
             else
             {
-                powerButton.setText("开启");
+                isStarted = false;
+                powerImageButton.setImageDrawable(getDrawable(R.drawable.power_off));
+                //powerImageButton.setText("开启");
                 String msg = Instruction.WORK_CTRL+(char)Instruction.WORK_MODE_OFF;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "关闭"+msg, Toast.LENGTH_SHORT).show();
 
+                /**
+                 *   OFF进行显示
+                 * */
+                workModeTextView.setText("");
+                inAirTextView.setText("");
+                iceTextView.setText("");
+                windValueTextView.setText("");
+                tempValueTextView.setText("");
+                windDirTextView.setText("");
             }
         }
     }
@@ -287,39 +340,44 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
 
         @Override
         public void onClick(View v) {
-            if(workModeTextView.getText().equals("除霜"))
+            if(windDirTextView.getText().equals("除霜"))
             {
-                workModeTextView.setText("吹头");
+                windDirTextView.setText("吹头");
+                windDireModeButton.setText("吹头/吹脚");
                 String msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_HEAD;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前吹风模式:吹头"+msg, Toast.LENGTH_SHORT).show();
             }
-            else if(workModeTextView.getText().equals("吹头"))
+            else if(windDirTextView.getText().equals("吹头"))
             {
                 windDirTextView.setText("吹头/吹脚");
+                windDireModeButton.setText("吹脚");
                 String msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_HT;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前吹风模式:吹头/吹脚"+msg, Toast.LENGTH_SHORT).show();
             }
-            else if(workModeTextView.getText().equals("吹头/吹脚"))
+            else if(windDirTextView.getText().equals("吹头/吹脚"))
             {
                 windDirTextView.setText("吹脚");
+                windDireModeButton.setText("吹脚/除霜");
                 String msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_TAIL;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前吹风模式:吹脚"+msg, Toast.LENGTH_SHORT).show();
             }
-            else if(workModeTextView.getText().equals("吹脚"))
+            else if(windDirTextView.getText().equals("吹脚"))
             {
                 windDirTextView.setText("吹脚/除霜");
+                windDireModeButton.setText("除霜");
                 String msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_TAIL_RMICE;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前吹风模式:吹脚/除霜"+msg, Toast.LENGTH_SHORT).show();
             }
-            else if(workModeTextView.getText().equals("吹脚/除霜"))
+            else if(windDirTextView.getText().equals("吹脚/除霜"))
             {
                 windDirTextView.setText("除霜");
+                windDireModeButton.setText("吹头");
                 String msg = Instruction.WINDDIR_CTRL+(char)Instruction.WIND_REMOVE_ICE;
-                sendMsg2Service(msg);
+                sendMsg2Service(msg+'\0');
                 Toast.makeText(AirControler.this, "当前吹风模式:除霜"+msg, Toast.LENGTH_SHORT).show();
             }
 //            if(v == windHeadButton)
@@ -371,12 +429,14 @@ public class AirControler extends Activity implements NumberPicker.OnValueChange
      */
     private  void initTempPicker()
     {
+        tempPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         tempPicker.setFormatter(this);
         tempPicker.setOnValueChangedListener(this);
         tempPicker.setMaxValue(32);
         tempPicker.setValue(22);
         tempPicker.setMinValue(16);
 
+        windPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         windPicker.setFormatter(this);
         windPicker.setOnValueChangedListener(this);
         windPicker.setMaxValue(4);

@@ -234,7 +234,14 @@ public class ClientActivity extends Activity {
 					}
 					else if(intent.getStringExtra("car").equals("failed"))
 					{
-						Toast.makeText(ClientActivity.this, "账号/密码验证失败", Toast.LENGTH_SHORT).show();
+//						if(failed_conter == 0)
+//						{
+							Toast.makeText(ClientActivity.this, "账号/密码验证失败", Toast.LENGTH_SHORT).show();
+//
+						firstSwitch = true;
+						stopService();//结束服务
+						dialog.dismiss(); //登陆成功，解除进度条
+
 //						if(firstSwitch == false) return;
 //						firstSwitch = false;
 //						/*切换到主控界面*/
@@ -244,13 +251,12 @@ public class ClientActivity extends Activity {
 //						isAuthed = true;
 //						failed_conter = 0; //清除失败显示计数器
 
-						dialog.dismiss(); //登陆成功，解除进度条
 					}
 					else if(intent.getStringExtra("car").equals("connect error"))
 					{
 						firstSwitch = true;
 						stopService();//结束服务
-						Toast.makeText(ClientActivity.this, "连接服务器失败:请检查网络或服务器正在维护", Toast.LENGTH_SHORT).show();
+						Toast.makeText(ClientActivity.this, "连接服务器失败:请检查网络或服务器是否正在维护", Toast.LENGTH_LONG).show();
 						dialog.dismiss(); //登陆成功，解除进度条
 					}
 				}
